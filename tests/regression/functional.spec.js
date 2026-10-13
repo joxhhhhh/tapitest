@@ -354,7 +354,7 @@ test('Invoice: Delete — removed from list', async ({ page }) => {
         // Navigated away — success
         await expect(page.getByRole('link', { name: 'Invoices' })).toBeVisible({ timeout: 10000 });
     } else {
-        await expect(page.getByText(/deleted|removed/i)).toBeVisible({ timeout: 8000 });
+        await expect(page.getByText(/deleted|removed/i).first()).toBeVisible({ timeout: 8000 });
     }
     await SS(page, 'invoice-delete-verified');
 });
