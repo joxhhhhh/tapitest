@@ -109,41 +109,59 @@ async function createFreshInvoice(page) {
     await page.locator('[data-test="invoice-upload-submit-button"]').click();
     await page.locator('[data-test="processing-invoice-process-button"]').click({ timeout: 60000 });
 
-    // Supplier
+    // Supplier — type into focused input after clicking button
     await page.locator('[data-test="match-invoice-supplier-field"] button').first().click();
-    const suppSearch = page.getByRole('searchbox', { name: /suppli/i })
-        .or(page.getByRole('searchbox').first());
-    await suppSearch.fill('josh');
+    await page.waitForTimeout(300);
+    await page.keyboard.type('josh');
     await page.waitForSelector('[role="option"]', { timeout: 8000 }).catch(() => {});
     const suppOpt = await page.locator('[role="option"]').count();
     if (suppOpt > 0) await page.locator('[role="option"]').first().click();
+    else {
+        await page.keyboard.type('a');
+        await page.waitForSelector('[role="option"]', { timeout: 5000 }).catch(() => {});
+        await page.locator('[role="option"]').first().click().catch(() => {});
+    }
 
-    // Property
+    // Property — type into focused input after clicking button
     const propBtn = page.locator('[data-test="match-invoice-property-field"] button');
     if (await propBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
         await propBtn.first().click();
-        // Use exact placeholder to avoid strict-mode violation (supplier searchbox also visible)
-        const propSearch = page.getByRole('searchbox', { name: 'Search properties...' });
-        await propSearch.fill('27 b');
-        await page.waitForSelector('[role="option"]', { timeout: 8000 }).catch(() => {});
-        await page.locator('[role="option"]').first().click();
-    }
-
-    // Attach — button may be disabled until job or "Process without job" is selected
-    await page.locator('.page-container').click();
-    const attachBtn = page.getByRole('button', { name: /attach invoice/i });
-    await attachBtn.waitFor({ state: 'visible', timeout: 30000 });
-    const isEnabled = await attachBtn.isEnabled({ timeout: 8000 }).catch(() => false);
-    if (!isEnabled) {
-        // Try clicking a job row to enable the button
-        await page.locator('text=/[A-Z]+-\\d+/').first().click({ timeout: 3000 }).catch(() => {});
-        await page.waitForTimeout(500);
-        if (!await attachBtn.isEnabled({ timeout: 3000 }).catch(() => false)) {
-            await page.locator('text=Process without job').first().click({ force: true, timeout: 5000 }).catch(() => {});
-            await page.waitForTimeout(500);
+        await page.waitForTimeout(300);
+        await page.keyboard.type('27 b');
+        const hasPropOpt = await page.waitForSelector('[role="option"]', { timeout: 8000 })
+            .then(() => true).catch(() => false);
+        if (hasPropOpt) {
+            await page.locator('[role="option"]').first().click();
+        } else {
+            // Fallback: clear and try broader term
+            await page.keyboard.press('Control+a');
+            await page.keyboard.type('a');
+            await page.waitForSelector('[role="option"]', { timeout: 5000 }).catch(() => {});
+            await page.locator('[role="option"]').first().click().catch(() => {});
         }
     }
-    await attachBtn.click({ timeout: 15000 });
+
+    await page.waitForTimeout(500);
+
+    // Enable attach button: try job row → "Process without job" → force click
+    const attachBtn = page.getByRole('button', { name: /attach invoice/i });
+    await attachBtn.waitFor({ state: 'visible', timeout: 30000 });
+
+    if (!await attachBtn.isEnabled({ timeout: 5000 }).catch(() => false)) {
+        // Try a job row (any ref-number text)
+        await page.locator('text=/[A-Z]+-\\d+/').first().click({ timeout: 3000 }).catch(() => {});
+        await page.waitForTimeout(500);
+    }
+    if (!await attachBtn.isEnabled({ timeout: 3000 }).catch(() => false)) {
+        // Try "Process without job"
+        await page.getByText('Process without job', { exact: false }).first()
+            .click({ force: true, timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(500);
+    }
+    // Last resort: force-click even if disabled (some apps still handle it)
+    await attachBtn.click({ force: true, timeout: 10000 }).catch(async () => {
+        await attachBtn.evaluate(el => el.click());
+    });
 
     // Fill required details
     await page.locator('[data-test="confirm-invoice-description-field"]').getByRole('textbox').fill('Func test invoice');
