@@ -34,7 +34,7 @@ const SS = (page, label) =>
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 async function login(page) {
-    await page.goto('https://dev.tapi.app/auth');
+    await page.goto('https://hq.staging.tapi.app');
     await page.getByRole('textbox', { name: 'you@company.com' }).fill(email);
     await page.getByRole('textbox', { name: '••••••••' }).fill(password);
     await page.getByRole('button', { name: 'Sign in' }).click();
@@ -367,10 +367,10 @@ test('Settings: Business settings page loads and fields are editable', async ({ 
     // Try each settings URL until one shows editable inputs
     let found = false;
     for (const url of [
-        'https://dev.tapi.app/settings',
-        'https://dev.tapi.app/settings/general',
-        'https://dev.tapi.app/settings/business',
-        'https://dev.tapi.app/settings/profile',
+        'https://hq.staging.tapi.app',
+        'https://hq.staging.tapi.app',
+        'https://hq.staging.tapi.app',
+        'https://hq.staging.tapi.app',
     ]) {
         await page.goto(url);
         await page.waitForLoadState('domcontentloaded', { timeout: 15000 });
@@ -382,7 +382,7 @@ test('Settings: Business settings page loads and fields are editable', async ({ 
 
     if (!found) {
         // Fall back: find settings via sidebar nav link
-        await page.goto('https://dev.tapi.app');
+        await page.goto('https://hq.staging.tapi.app');
         await page.waitForLoadState('domcontentloaded');
         await page.locator('[data-test="settings-link"], a[href*="settings"], [aria-label*="Settings" i]')
             .first().click({ timeout: 8000 }).catch(() => {});

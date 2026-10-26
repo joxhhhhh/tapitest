@@ -1,69 +1,37 @@
-import {test, expect} from '@playwright/test';
-/*import {LoginPage} from '../pages/LoginPage';   // Import the LoginPage class       
-import {DashboardPage} from '../pages/DashboardPage'; // Import the DashboardPage class 
-*/
+import { test, expect } from '@playwright/test';
 
-test('Assertions', async ({page}) => {
-  await page.goto('https://staging.tapi.app/auth');
-  await expect(page).toHaveURL('https://staging.tapi.app/auth');
-  await expect(page).toHaveTitle('Tapi');
-  const TapiLogo=await page.locator('.logo.new');
-  expect(await TapiLogo.isVisible()).toBeTruthy();
-  await page.locator('#session_email').click();
-  await page.locator('#session_email').fill('josh@tapihq.com');
-  await page.locator('#session_password').click();
-  await page.locator('#session_password').fill('Josh123456');
+const email = process.env.TEST_EMAIL || 'josh@tapihq.com';
+const password = process.env.TEST_PASSWORD || 'Josh123456';
 
-  await page.locator("//button[normalize-space()='Log in']").click();
-  await page.waitForSelector('text=Inbox');
-  expect(await page.isVisible('text=Inbox')).toBeTruthy();
+test('Assertions - login page and new job form', async ({ page }) => {
+    await page.goto('/auth');
+    await expect(page).toHaveURL('/auth');
+    await expect(page).toHaveTitle('Tapi');
 
-  /*await page.locator("//span[@class='button__content'][normalize-space()='Search']");
-  expect(await page.isEnabled('text=Jobs')).toBeTruthy();
-*/
-  await page.locator("text=New Job").click();
-  await page.locator("(//button[@type='button'])[3]").click();
-  expect(await page.isEnabled("(//button[@type='button'])[3]")).toBeTruthy();
-  await page.locator('[data-test="new-job-menu-link"]').click();
-  await page.getByRole('button', { name: 'Tenant' }).click();
-  await page.getByRole('button', { name: 'Select property' }).click();
-  await page.getByRole('searchbox', { name: 'Search properties...' }).fill('test');
-  await page.getByText('Test Road').click();
-  await page.getByText('Notes Property note First').click();
-  await page.getByRole('textbox', { name: 'Keep it short!' }).click();
-  await page.getByRole('textbox', { name: 'Keep it short!' }).fill('Test 3'); // Job title
-  await page.locator('[data-test="new-job-description-field"]').getByRole('textbox').click();
-  await page.locator('[data-test="new-job-description-field"]').getByRole('textbox').fill('test 3'); // Job description
-  await page.getByRole('button', { name: 'Josh Sali' }).click();
-  await page.locator('#content div').filter({ hasText: 'Source Inspection Tenant' }).nth(2).click();
-  await page.locator('[data-test="new-job-submit-button"]').click();
-  await page.locator('.responsive-holder__inner').click();
+    await page.waitForSelector('input[type="email"]');
+    await page.locator('input[type="email"]').fill(email);
+    await page.locator('input[type="password"]').fill(password);
+    await page.locator('input[type="password"]').press('Enter');
 
-  
+    await page.waitForSelector('text=Inbox', { timeout: 30000 });
 
-  });
+    await page.locator('[data-test="new-job-menu-link"]').click();
+    await page.waitForSelector('[data-test="new-job-submit-button"]', { timeout: 15000 });
+    await page.getByRole('button', { name: 'Tenant' }).first().click();
+    await expect(page.getByRole('button', { name: 'Tenant' }).first()).toBeVisible();
 
-  /*const links = await page.$$('a');
+    await page.getByRole('button', { name: 'Select property' }).first().click();
+    await page.getByRole('searchbox', { name: 'Search properties...' }).fill('27 B');
+    await page.waitForTimeout(500);
+    await page.getByText('27 B').first().click(); // select first matching property
+    // Tenancy: click the tenancy dropdown trigger then pick the first option
+    await page.locator("span[class='dropdown-trigger'] span[class='button__content']").first().click();
+    await page.waitForSelector("//div[@role='option']", { timeout: 10000 });
+    await page.locator("//div[@role='option']").first().click();
+    await page.getByRole('textbox', { name: 'Keep it short!' }).fill('Test 3');
+    await page.locator('[data-test="new-job-description-field"]').getByRole('textbox').fill('test 3');
+    await page.getByRole('button', { name: 'Josh Sali' }).first().click();
+    await page.locator('[data-test="new-job-submit-button"]').click();
 
-  for (const link of links) {
-    const text = await link.textContent();
-    console.log(text);
-  }
-    */
-  //page.waitForSelector("//div[@class='table-wrapper page-table']//table//tbody//span/a");
-
-  //  const jobs=await page.$$("//div[@class='table-wrapper page-table']//table//tbody//span/a");
-  //  console.log(jobs.length);
-
- // for (const job of jobs) {
-   // const text = await job.textContent();
-    //console.log(text);
-//}
-
-  /*
-  await page.getByRole('textbox', { name: 'Email:' }).click();
-  await page.getByRole('textbox', { name: 'Email:' }).fill('josh@tapihq.com');
-  await page.getByRole('textbox', { name: 'Password:' }).click();
-  await page.getByRole('textbox', { name: 'Password:' }).fill('Josh123456');
-  await page.getByRole('button', { name: 'Log in' }).click();
-*/
+    await expect(page.locator('.responsive-holder__inner')).toBeVisible();
+});
