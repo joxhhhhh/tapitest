@@ -23,7 +23,7 @@ const __dirname  = path.dirname(__filename);
 const invoiceFile = path.join(__dirname, '../uploadfiles/Standard Invoice sure.pdf');
 
 const email    = process.env.TEST_EMAIL    || 'josh@tapihq.com';
-const password = process.env.TEST_PASSWORD || 'REDACTED';
+const password = process.env.TEST_PASSWORD;   // from .env (never committed)
 
 // Override with TRUSTS="Trust A,Trust B" to run against other trusts without editing this file
 const TRUSTS = process.env.TRUSTS ? process.env.TRUSTS.split(',').map(t => t.trim()) : [

@@ -25,7 +25,7 @@ const __dirname  = path.dirname(__filename);
 const invoiceFile = path.join(__dirname, '../uploadfiles/Invoice Sample.pdf');
 
 const email    = process.env.TEST_EMAIL    || 'josh@tapihq.com';
-const password = process.env.TEST_PASSWORD || 'REDACTED';
+const password = process.env.TEST_PASSWORD;   // from .env (never committed)
 const TRUST    = process.env.TEST_TRUST    || 'Property Me NZ v2';
 
 const SS = (page, label) =>
