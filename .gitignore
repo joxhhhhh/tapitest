@@ -8,3 +8,16 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Saved logins (live session cookies)
+auth*.json
+
+# Run output and screenshots
+/tests/Screenshots/
+/test-results*.json
+/debug-*
+/reports/
+
+# Tapi 2 production files live in the Tapi2-Prod-Test project
+/tests/prod/
+/save-session-prod.ps1
